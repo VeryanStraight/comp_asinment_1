@@ -62,16 +62,43 @@ public class Position {
      * Return a string with the values of the fields.
      */
     public String toString() {
-        return String.format("(%d,%d)", row, col);
+        return String.format("(%d,%d)", col, row);
     }
     
     /**
      * Return true if the postions are the same
      */
-    public boolean isEqual(Position p) {
+    public boolean isEqual(Position p) { //change to "equals()"
         if(p.getCol() == col && p.getRow() == row){
             return true;
         }
         return false;
     }
+
+	@Override
+	public int hashCode() { //append row to col and return result (e.g row=4, col=7, result=74)
+		final int prime = 31; 
+		int result = 1;
+		result = prime * result + col;
+		result = prime * result + row;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Position other = (Position) obj;
+		if (col != other.col)
+			return false;
+		if (row != other.row)
+			return false;
+		return true;
+	}
+    
+    
 }

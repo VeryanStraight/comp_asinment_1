@@ -27,13 +27,11 @@ public class Sokoban {
     private Position workerPos;         // the position of the worker
     private String workerDir = "left";  // the direction the worker is facing
     
-    private Deque<ActionRecord> actionRecord = new ArrayDeque<ActionRecord>(); //record ot the acion taken
-    private Deque<ActionRecord> redoRecord = new ArrayDeque<ActionRecord>(); //record of the undon actions for the redo button
+    private Stack<ActionRecord> actionRecord = new Stack<ActionRecord>(); //record ot the acion taken
+    private Stack<ActionRecord> redoRecord = new Stack<ActionRecord>(); //record of the undon actions for the redo button
     
-    private Deque<Position> path = new ArrayDeque<Position>(); // list of the found path
-    private ArrayList<Position> checkedCells = new ArrayList<Position>(); // list of the cells that have been checked
     
-    private Deque<ActionRecord> directionsPath = new ArrayDeque<ActionRecord>(); //the found path as directions
+    private Stack<ActionRecord> directionsPath = new Stack<ActionRecord>(); //the found path as directions
 
 
     /** 
@@ -173,11 +171,21 @@ public class Sokoban {
         Trace.println("Pull " + direction);   // for debugging
     }
     
+    public Stack<Position> findPath(Position inital, Position end) {
+    	Stack<Position> path = new Stack<Position>(); // list of the found path
+        Set<Position> checkedCells = new HashSet<Position>(); // list of the cells that have been checked
+        
+        findPathRecurse(inital, end, path, checkedCells);
+        UI.println(path.toString());
+        return path;
+        
+    }
+    
     /**
      * 
      *  
      */
-    public Boolean findPath(Position inital, Position end) {// not working 
+    public Boolean findPathRecurse(Position inital, Position end, Stack path, Set checkedCells) {// not working 
         checkedCells.add(inital);
         path.push(inital);
         
@@ -193,14 +201,14 @@ public class Sokoban {
             else if(i==1){neighbor=inital.next("up");}
             else if(i==2){neighbor=inital.next("right");}
             else{neighbor=inital.next("down");}
-            UI.println(neighbor);
+            //UI.println(neighbor);
            
             //checks that the nabour is free and hasn't been checked
-            if(!cells[neighbor.row][neighbor.col].isFree() || checkedCells.contains(neighbor)){
+            if(!cells[neighbor.row][neighbor.col].isFree() || checkedCells.contains(neighbor)){ //check if box at position
                 continue;
             }
             
-            if(findPath(neighbor, end)){//return true when the end is found
+            if(findPathRecurse(neighbor, end, path, checkedCells)){//return true when the end is found
                 return true; 
             }
         }
@@ -235,7 +243,7 @@ public class Sokoban {
         }  
     }*/
     
-    public void PostionsToDirections() {
+    public void PostionsToDirections(Stack<Position> path) {
         int size = path.size();
         Position first = path.pop();
         
@@ -277,9 +285,10 @@ public class Sokoban {
             
             if(endPostion != null){
                 UI.println("path not found");
-                if(findPath(workerPos, endPostion)){//find a path to end point
+                Stack<Position> path = findPath(workerPos, endPostion);
+                if(!path.empty()){//find a path to end point //TODO test if works when start on goal
                     UI.println("path found");
-                    PostionsToDirections();//convrt list of postions to stack of directions
+                    PostionsToDirections(path);//convrt list of postions to stack of directions
                     while(!directionsPath.isEmpty()){
                         ActionRecord move = directionsPath.pop();     //gets the next action
                         String direction = move.direction();
@@ -402,16 +411,17 @@ public class Sokoban {
      * Load a grid of cells (and Worker position) for the current level from a file
      */
     public void doLoad() {
-        Path path = Path.of("warehouse" + level + ".txt");
+    	File file = new File("warehouse" + level + ".txt");
+        //Path path = Path.of("warehouse" + level + ".txt");
 
-        if (! Files.exists(path)) {
+        if (! file.exists()) {
             UI.printMessage("Run out of levels!");
             level--;
         }
         else {
             List<String> lines = new ArrayList<String>();
             try {
-                Scanner sc = new Scanner(path);
+                Scanner sc = new Scanner(file);
                 while (sc.hasNext()){
                     lines.add(sc.nextLine());
                 }
