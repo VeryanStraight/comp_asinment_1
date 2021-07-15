@@ -122,6 +122,12 @@ public class DeShredder {
         }
     }
     
+    /**
+     * find if the anny of the strips in allShreds is simmlar to the last in the working strip
+     * -finds the pixles of either side 
+     * -compaires to the pixles of the oppsit side of the shreds in allShreds
+     * -if they a
+     */
     public void findSimmlarShred(){
         if(!workingStrip.isEmpty()){
             int size = workingStrip.size();
@@ -157,6 +163,61 @@ public class DeShredder {
     }
     
     public boolean isSimmlar(Color[] list1, Color[] list2){
+        List<Color> colours1 = new ArrayList<Color>();
+        List<Color> colours2 = new ArrayList<Color>();
+        
+        for(int i=0; i<SIZE; i++){
+            if(!colours1.contains(list1[i])){colours1.add(list1[i]);}
+            if(!colours2.contains(list2[i])){colours2.add(list2[i]);}
+        }
+        
+        if(colours1.size() == 1 || colours2.size() == 1){
+            return false;
+        }
+        
+        int count = 0;
+        
+        for(int i=0; i<SIZE; i++){//go throught the pixels
+            Color color = list1[i];
+            
+            if(i>1 && i<SIZE-2){ //if not next to either end
+                for(int j=-2; j<=2; j++){ //go through the pixles  in the other list within 2 places of the current pixel.
+                    if(color.equals(list2[i+j])){//if they have the same colour increse count and jump out f the loop
+                        count++;
+                        break;
+                    }
+                }
+            }
+            
+            if(i<=1 ){ //if is at start
+                for(int j=-i; j<=2; j++){ 
+                    if(color.equals(list2[i+j])){//if they have the same colour increse count and jump out f the loop
+                        count++;
+                        break;
+                    }
+                }
+            }
+            
+            if(i>=SIZE-2 ){ //if is at end
+                for(int j=-2; j<=(SIZE-1-i); j++){ 
+                    if(color.equals(list2[i+j])){//if they have the same colour increse count and jump out f the loop
+                        count++;
+                        break;
+                    }
+                }
+            }
+        }
+
+        double raito = count/SIZE;
+        
+        if(raito>=0.8){
+            return true;
+        }
+        
+        return false;
+    }
+    
+    /*public boolean isSimmlar(Color[] list1, Color[] list2){
         int numMatching =0;
         List<Color> colours1 = new ArrayList<Color>();
         List<Color> colours2 = new ArrayList<Color>();
@@ -187,7 +248,7 @@ public class DeShredder {
         } 
         
         return false;
-    }
+    }*/
     
     /*public boolean containsSimmlarColor(Color color, List<Color> colours){
         int size = colours.size();
@@ -395,7 +456,7 @@ public class DeShredder {
             if((fromStrip == allShreds || fromStrip == workingStrip)
                 && (toStrip == allShreds || toStrip == workingStrip)){
                 moveShred(toStrip, toPosition);
-                findSimmlarShred();
+                findSimmlarShred(); 
             }else{
                 moveStrip(toStrip);
                 findSimmlarShred();
